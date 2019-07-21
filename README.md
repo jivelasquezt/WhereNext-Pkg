@@ -8,5 +8,5 @@ Install and run the WhereNext shiny app using the following R code.
 install.packages("devtools")
 devtools::install_github("jivelasquezt/WhereNext-Pkg")
 library(WhereNext)
-WhereNextRun()
+RunWhereNext()
 ```

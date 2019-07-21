@@ -78,9 +78,11 @@ server <- function(input, output, session) {
       tryCatch(gbif.res <- DownloadGBIF(key, input$user, input$user.email, input$password, ISOcodes::ISO_3166_1$Alpha_2[ind.aoi]),
                error = function(e){
                  rv$logs <- paste(rv$logs, print(e),"\n")
-                 rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. Check your internet connection, search parameters and/or GBIF credentials and try again\n")
-                 return()
                })
+      if(!exists(gbif.res)){
+        rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. \nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
+        return()
+      }
 
     } else if(input$aoiSrc=="usr.shp") {
       index <- sapply(gregexpr("\\/", input$aoi.shp$datapath), tail, 1)
@@ -98,9 +100,11 @@ server <- function(input, output, session) {
       tryCatch(gbif.res <- DownloadGBIF(key, input$user, input$user.email, input$password, NULL, rv$aoi),
                error = function(e){
                  rv$logs <- paste(rv$logs, print(e),"\n")
-                 rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. Check your internet connection, search parameters and/or GBIF credentials and try again\n")
-                 return()
                })
+      if(!exists(gbif.res)){
+        rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. \nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
+        return()
+      }
     }
 
     output$citation <- gbif.res$citation
