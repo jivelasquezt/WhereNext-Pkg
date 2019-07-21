@@ -1,0 +1,36 @@
+Package: WhereNext
+Type: Package
+Title: Biological Survey Recommending System Based on General Dissimilarity Modeling 
+Version: 1.0.0
+Author: Jorge Velásquez-Tibatá
+Maintainer: Jorge Velásquez-Tibatá <jivelasquezt@gmail.com>
+Description: WhereNext is a recommendation system to identify iteratively sites that complement the most existing biodiversity surveys. 
+    WhereNext will guide you through the process of developing a General Dissimilarity Model (GDM) for your group and area of interest 
+    based on occurrence data as well as identifying iteratively survey sites that maximize your potential to record new species.
+Depends: R (>= 3.5.3), leaflet, shiny
+Imports:
+  benchmarkme,
+  CoordinateCleaner,
+  DT,
+  gdm,
+  htmltools,
+  ISOcodes,
+  lubridate,
+  openxlsx,
+  raster,
+  reshape2 ,
+  rgdal,
+  rgbif,
+  rnaturalearthdata,
+  sf,
+  sp,
+  shinybusy,
+  shinycssloaders,
+  shinyjs,
+  shinythemes,
+  tidyr,
+  vegan
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
