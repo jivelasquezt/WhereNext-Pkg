@@ -79,7 +79,7 @@ server <- function(input, output, session) {
                error = function(e){
                  rv$logs <- paste(rv$logs, print(e),"\n")
                })
-      if(!exists(gbif.res)){
+      if(!exists("gbif.res")){
         rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. \nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
         return()
       }
@@ -101,7 +101,7 @@ server <- function(input, output, session) {
                error = function(e){
                  rv$logs <- paste(rv$logs, print(e),"\n")
                })
-      if(!exists(gbif.res)){
+      if(!exists("gbif.res")){
         rv$logs <- paste(rv$logs, "An error ocurred downloading data from GBIF. \nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
         return()
       }
