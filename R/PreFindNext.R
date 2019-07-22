@@ -37,13 +37,13 @@
 #' site data. In 18th World IMACS/MODSIM Congress, Cairns, Australia (pp. 13-17).
 #'
 #' @examples
-#' #' \dontrun{
+#' \dontrun{
 #' #To compute cell stats for colombian bats
-#' library(ISOcodes)
 #' library(lubridate)
 #' library(raster)
 #' library(rgbif)
 #' library(WhereNext)
+#'
 #' #Get occurrence data
 #' gbif.key <- name_backbone(name = "Chiroptera")
 #' gbif.res <- DownloadGBIF(gbif.key$orderKey, "your username", "your email", "your password", "CO") #Enter your GBIF credentials here
@@ -57,19 +57,18 @@
 #' env.vars <- RemCorrLayers(env.vars, 0.8) #Remove variables correlated more than r=0.8.
 #'
 #' #Do minimal occ.table cleaning
-#' occ.table <-gbif.res$occ.table
+#' occ.table <- gbif.res$occ.table
 #' occ.table$eventDate <- as_date(occ.table$eventDate)
 #' occ.table$individualCount <- 1 #Data is presence only
-#' occ.table$countryCode <- ISO_3166_1$Alpha_3[match(occ.table$countryCode, ISOcodes::ISO_3166_1$Alpha_2)] #Change ISO2 for ISO3 as required by CoordinateCleaner
 #' occ.table.clean <- subset(occ.table, !is.na(eventDate) & taxonRank=="SPECIES")
-#' rownames(occ.table.clean) <- 1:nrow(occ.table.clean)
+#' row.names(occ.table.clean) <- 1:nrow(occ.table.clean)
 #' occ.table.clean <- CoordinateCleaner::clean_coordinates(occ.table.clean,
 #'                                                         lon="decimalLongitude",
 #'                                                         lat="decimalLatitude",
 #'                                                         species="species",
 #'                                                         countries = "countryCode",
 #'                                                         value="clean",
-#'                                                         tests=c("countries","capitals","centroids", "equal", "gbif",
+#'                                                         tests=c("capitals","centroids", "equal", "gbif",
 #'                                                                 "institutions", "outliers", "seas","zeros"))
 #'
 #' #Estimate cell sampling stats & filter occurrence data
@@ -77,7 +76,7 @@
 #' cell.stats <- RichSamp(occ.table.clean, env.vars, c("decimalLongitude","decimalLatitude","eventDate","species","individualCount","cell"))
 #' selected.cells <- cell.stats$cell[which(cell.stats$n>3&cell.stats$Species>5)] #Consider places with at least 3 sampling events and 5 species recorded as well sampled
 #' occ.table.sel <- occ.table.clean[which(occ.table.clean$cell %in% selected.cells), ] #Use only ocurrences of well sampled cells
-
+#'
 #' #Run and map GDM
 #' m1 <- RunGDM(occ.table.sel, env.vars, "bray", TRUE, TRUE, c("species", "decimalLongitude", "decimalLatitude"))
 #' plotRGB(m1$gdm.map$pcaRast)
@@ -86,7 +85,6 @@
 #' init <- PreFindNext(m1$gdm.res, m1$occ.table, m1$gdm.rasters, subset.size=1000, search.type="1")
 #' plot(init$out.raster)
 #' points(init$selCoords)
-#'
 #' }
 #' @export
 #' @import raster

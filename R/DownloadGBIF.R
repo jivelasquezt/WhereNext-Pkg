@@ -1,6 +1,7 @@
 #' Download GBIF data
 #' @description This function retrieves GBIF data in SIMPLE_CSV for a user provided taxon key and area, the latter either as a ISO2
-#' country code or a SpatialPolygons* object in WGS84 (EPSG: 4326) projection.
+#' country code or a SpatialPolygons* object in WGS84 (EPSG: 4326) projection. When area is defined by a 
+#' SpatialPolygons* object, records for the entire extent of the shapefile are retrieved.
 #'
 #' @param key a gbif taxon key obtained through the rgbif::name_backbone function. Required
 #' @param user your GBIF account user name. Required.
@@ -30,9 +31,15 @@
 #' gbif.res <- DownloadGBIF(gbif.key$orderKey, "your username", "your email", "your password", "CO") #Enter your GBIF credentials here
 #'
 #' #Example2: Get occurrence data for bats from the Antioquia province in Colombia by using a shapefile
-#' col.shp <- getData(name="GADM",country="CO", level=0) #Get country shapefile with level 1 administrative boundaries
+#' col.shp <- getData(name="GADM",country="CO", level=1) #Get country shapefile with level 1 administrative boundaries
 #' antioquia <- col.shp[2, ]
 #' gbif.res <- DownloadGBIF(gbif.key$orderKey, "your username", "your email", "your password", NULL, antioquia)
+#' 
+#' #Refine data to input shapefile
+#' ind.nna<- !is.na(extract(antioquia, gbif.res$occ.table[,c("decimalLongitude", "decimalLatitude")])$poly.ID)
+#' occ.table <- gbif.res$occ.table[ind.nna, ]
+#' plot(antioquia)
+#' points(occ.table$decimalLongitude, occ.table$decimalLatitude)
 #' }
 #' @export
 

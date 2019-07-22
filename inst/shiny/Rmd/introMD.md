@@ -18,7 +18,7 @@ To get started, browse in order through tabs and follow the numbered steps from 
     * The fields `decimalLongitude` and `decimalLatitude may be used to store x and y coordinates, regardless of the projection.
     * Bear in mind that *WhereNext* will assume that the coordinates of your occurrence data match the projection of the study area shapefile. If they don’t match, you will have to make any necessary transformations outside *WhereNext*.
 
-    Optional: coordinates may be cleaned by pulsing the clean data button. This action will run package *CoordinateCleaner* (Zizka et al. 2019) which will run the `countries`, `capitals`, `centroids`, `countries`, `equal`, `gbif`, `institutions`, `outliers`, `seas` and `zeros` tests. To learn more about these tests check the *CoordinateCleaner* package documentation (https://cran.r-project.org/web/packages/CoordinateCleaner/index.html).
+    Optional: coordinates may be cleaned by pulsing the clean data button. This action will run package *CoordinateCleaner* (Zizka et al. 2019) which will run the `countries`, `capitals`, `centroids`, `equal`, `gbif`, `institutions`, `outliers`, `seas` and `zeros` tests. To learn more about these tests check the *CoordinateCleaner* package documentation (https://cran.r-project.org/web/packages/CoordinateCleaner/index.html).
 
 3. Select environmental data: either download WorldClim data or provide your own environmental raster layers. Bear in mind that the extent and resolution of your raster layers must be the same and that they must be in the same projection as the study area shapefile. 
 
