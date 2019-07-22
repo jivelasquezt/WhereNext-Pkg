@@ -451,7 +451,13 @@ server <- function(input, output, session) {
       rv$logs <- paste(rv$logs, "Error: first select occurrence data\n")
       return()
     }
-    clim <- raster::getData("worldclim", var="bio", res=input$wc.res)
+    tryCatch(clim <- raster::getData("worldclim", var="bio", res=input$wc.res),
+             error= function(e){
+               rv$logs <- paste(rv$logs, e, "\n")
+             })
+    if(!exists("clim")){
+      rv$logs <- paste(rv$logs, "Worldclim download failed. Check your internet connection and try again.\n")
+    }
     rv$logs <- paste(rv$logs, "Worldclim data downloaded\n")
     clim.aoi <- raster::crop(clim, rv$aoi)
     clim.aoi <- raster::mask(clim.aoi, rv$aoi)

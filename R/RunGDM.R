@@ -151,6 +151,6 @@ RunGDM <- function(occ.table, env.vars, index, use.geo, do.VarSel, field.names){
 
   env.vars.red <- env.vars[[which(names(env.vars)%in%gdm.rast$predictors)]]
   rastTrans <- gdm::gdm.transform(gdm.rast, env.vars.red)
-  map.gbd.results <- WhereNext::MapGDMLight(rastTrans)
+  map.gbd.results <- MapGDMLight(rastTrans)
   return(list(occ.table=occ.table, gdm.res=gdm.rast, gdm.rasters=rastTrans, gdm.map=map.gbd.results))
 }
