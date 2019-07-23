@@ -46,9 +46,8 @@ will exclude the suggestion found in the previous iteration and find the next be
 "modify" option will select the cell corresponding to custom.coords and find the next best site.
 }
 \examples{
-#' \dontrun{
+\dontrun{
 #To compute cell stats for colombian bats
-library(ISOcodes)
 library(lubridate)
 library(raster)
 library(rgbif)
@@ -67,19 +66,18 @@ env.vars <- Normalize(env.vars) #Normalize environmental variables
 env.vars <- RemCorrLayers(env.vars, 0.8) #Remove variables correlated more than r=0.8.
 
 #Do minimal occ.table cleaning
-occ.table <-gbif.res$occ.table
+occ.table <- gbif.res$occ.table
 occ.table$eventDate <- as_date(occ.table$eventDate)
 occ.table$individualCount <- 1 #Data is presence only
-occ.table$countryCode <- ISO_3166_1$Alpha_3[match(occ.table$countryCode, ISOcodes::ISO_3166_1$Alpha_2)] #Change ISO2 for ISO3 as required by CoordinateCleaner
 occ.table.clean <- subset(occ.table, !is.na(eventDate) & taxonRank=="SPECIES")
-rownames(occ.table.clean) <- 1:nrow(occ.table.clean)
+row.names(occ.table.clean) <- 1:nrow(occ.table.clean)
 occ.table.clean <- CoordinateCleaner::clean_coordinates(occ.table.clean,
                                                         lon="decimalLongitude",
                                                         lat="decimalLatitude",
                                                         species="species",
                                                         countries = "countryCode",
                                                         value="clean",
-                                                        tests=c("countries","capitals","centroids", "equal", "gbif",
+                                                        tests=c("capitals","centroids", "equal", "gbif",
                                                                 "institutions", "outliers", "seas","zeros"))
 
 #Estimate cell sampling stats & filter occurrence data

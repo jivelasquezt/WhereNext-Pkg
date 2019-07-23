@@ -59,7 +59,14 @@ server <- function(input, output, session) {
                             To create a free GBIF account go to: https://www.gbif.org"))
       return()
     }
-    gbif.key <- rgbif::name_backbone(name = input$grp.selection)
+    tryCatch(gbif.key <- rgbif::name_backbone(name = input$grp.selection),
+             error = function(e){
+               rv$logs <- paste(rv$logs, e, "\n")
+             })
+    if(!exists("gbif.key")){
+      rv$logs <- paste(rv$logs, "An error occurred getting the taxon key. Check your internet connection and try again.\n")
+      return()
+    }
     if(gbif.key$matchType == "EXACT"){
       key <- gbif.key[input$grp.type]
       if(key=="NULL"){
@@ -74,7 +81,14 @@ server <- function(input, output, session) {
 
     if(input$aoiSrc=="aoi.ctr"){
       ind.aoi <- which(ISOcodes::ISO_3166_1$Name == input$country.sel)
-      rv$aoi <- raster::getData(name="GADM",country=ISOcodes::ISO_3166_1$Alpha_3[ind.aoi], level=0) #Get country shapefile
+      tryCatch(rv$aoi <- raster::getData(name="GADM",country=ISOcodes::ISO_3166_1$Alpha_3[ind.aoi], level=0),
+               error = function(e) {
+                 rv$logs <- paste(rv$logs, print(e),"\n")
+               })
+      if(is.null(rv$aoi)){
+        rv$logs <- paste(rv$logs, "An error ocurred downloading country shapefile.\nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
+        return()
+      }
       tryCatch(gbif.res <- DownloadGBIF(key, input$user, input$user.email, input$password, ISOcodes::ISO_3166_1$Alpha_2[ind.aoi]),
                error = function(e){
                  rv$logs <- paste(rv$logs, print(e),"\n")
@@ -244,7 +258,14 @@ server <- function(input, output, session) {
     #Refine records by shapefile
     if(input$aoiSrc=="aoi.ctr"){
       ind.aoi <- which(ISOcodes::ISO_3166_1$Name == input$country.sel)
-      rv$aoi <- raster::getData(name="GADM",country=ISOcodes::ISO_3166_1$Alpha_3[ind.aoi], level=0) #Get country shapefile
+      tryCatch(rv$aoi <- raster::getData(name="GADM",country=ISOcodes::ISO_3166_1$Alpha_3[ind.aoi], level=0),
+               error = function(e) {
+               rv$logs <- paste(rv$logs, print(e),"\n")
+      })
+      if(is.null(rv$aoi)){
+        rv$logs <- paste(rv$logs, "An error ocurred downloading country shapefile. \nCheck your internet connection, search parameters and/or GBIF credentials and try again\n")
+        return()
+      }
     } else if(input$aoiSrc=="usr.shp") {
       index <- sapply(gregexpr("\\/", input$aoi.shp$datapath), tail, 1)
       shp.dir <- substr(input$aoi.shp$datapath, 1, index)
@@ -332,20 +353,34 @@ server <- function(input, output, session) {
     rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after removing records without date\n")
 
     #Run coordinate cleaner
-    rownames(rv$sp.data) <- 1:nrow(rv$sp.data)
-    tryCatch(rv$sp.data <- CoordinateCleaner::clean_coordinates(rv$sp.data,
+    row.names(rv$sp.data) <- 1:nrow(rv$sp.data)
+    try(sp.data.clean <- CoordinateCleaner::clean_coordinates(rv$sp.data,
                                              lon="decimalLongitude",
                                              lat="decimalLatitude",
                                              species="species",
                                              countries = "countryCode",
                                              value="clean",
                                              tests=c("countries","capitals","centroids", "equal", "gbif",
-                                                     "institutions", "outliers", "seas","zeros")),
-             error = function(e) {
-               rv$logs <-paste(rv$logs, e)
-               rv$logs <-paste(rv$logs, "CoordinateCleaner failed. Restore occurrences\n")
-             },
-             finally = rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n"))
+                                                     "institutions", "outliers", "seas","zeros")))
+    if(!is.null(sp.data.clean)){
+      rv$sp.data <- sp.data.clean
+      rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")
+    } else {
+      rv$logs <-paste(rv$logs, "CoordinateCleaner failed. Trying now without country test\n")
+      tryCatch({sp.data.clean <- CoordinateCleaner::clean_coordinates(rv$sp.data,
+                                                                      lon="decimalLongitude",
+                                                                      lat="decimalLatitude",
+                                                                      species="species",
+                                                                      countries = "countryCode",
+                                                                      value="clean",
+                                                                      tests=c("capitals","centroids", "equal", "gbif","institutions", "outliers", "seas","zeros"))
+               rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")},
+               error = function(e) {
+                 rv$logs <-paste(rv$logs, e)
+                 rv$logs <-paste(rv$logs, "CoordinateCleaner failed. No data cleaning performed.\n")
+               })
+    }
+             
     #Map cleaned records
     n.max <- min(nrow(rv$sp.data), 1e5)
     disp.order <- sample(1:nrow(rv$sp.data),n.max)
@@ -457,6 +492,7 @@ server <- function(input, output, session) {
              })
     if(!exists("clim")){
       rv$logs <- paste(rv$logs, "Worldclim download failed. Check your internet connection and try again.\n")
+      return()
     }
     rv$logs <- paste(rv$logs, "Worldclim data downloaded\n")
     clim.aoi <- raster::crop(clim, rv$aoi)
@@ -481,8 +517,11 @@ server <- function(input, output, session) {
     tryCatch(rv$env.vars.orig <- raster::stack(input$env.files$datapath),
              error=function(e){
                rv$logs <- paste(rv$logs, "Error:", e,"\n")
-               rv$logs <- paste(rv$logs, "User provided rasters not loaded", "\n")
              })
+    if(is.null(rv$env.vars.orig)){
+      rv$logs <- paste(rv$logs, "An error occurred uploading rasters.\nRasters must be readable by function raster and should have matching extent and resolution.\n")
+      return()
+    }
     names(rv$env.vars.orig) <- input$env.files$name
     if(!is.null(rv$env.vars.orig)){
       rv$logs <- paste(rv$logs, "Variables: ", paste(names(rv$env.vars.orig),collapse=", "), "uploaded\n")
@@ -572,7 +611,7 @@ server <- function(input, output, session) {
   #################################
   observe({
     if(!is.null(rv$cell.richness)){
-      updateSliderInput(session, "completeness", value=input$completeness, min=round(min(rv$cell.richness$C_jack2),2), max=1, step=0.1)
+      updateSliderInput(session, "completeness", value=input$completeness, min=round(min(rv$cell.richness$C_chao),1), max=1, step=0.05)
       updateSliderInput(session, "richness", value=input$richness, min=min(rv$cell.richness$Species), max=50, step=1)
       updateSliderInput(session, "n.surveys", value=input$n.surveys, min=min(rv$cell.richness$n),max=50, step=1)
     }
@@ -583,7 +622,7 @@ server <- function(input, output, session) {
       input$n.surveys
     }, {
     if(!is.null(rv$cell.richness)){
-      survey.sites <- rv$cell.richness[which(rv$cell.richness$C_jack2 >= input$completeness &
+      survey.sites <- rv$cell.richness[which(rv$cell.richness$C_chao >= input$completeness &
                                                rv$cell.richness$Species >= input$richness &
                                                rv$cell.richness$n >= input$n.surveys),]
       rv$selected.cells <- survey.sites$cell
@@ -594,7 +633,7 @@ server <- function(input, output, session) {
                 '<tr><td> Cell','</td><td>', survey.sites[i, "cell"],'</td></tr>',
                 '<tr><td> Richness(R)','</td><td>', survey.sites[i, "Species"],'</td></tr>',
                 '<tr><td> Surveys','</td><td>', survey.sites[i, "n"],'</td></tr>',
-                '<tr><td> Rest(jack2)','</td><td>', survey.sites[i, "jack2"],'</td></tr>',
+                '<tr><td> Estimated R(chao)','</td><td>', round(survey.sites[i, "chao"], 1),'</td></tr>',
                 '</table>')
       })
       map %>%
@@ -614,30 +653,15 @@ server <- function(input, output, session) {
     if(is.null(rv$cell.richness)){
       rv$logs <- paste(rv$logs, "Must first estimate richness, completeness and sampling effort\n")
     } else {
-      survey.sites <- rv$cell.richness[which(rv$cell.richness$C_jack2 >= input$completeness &
-                                               rv$cell.richness$Species >= input$richness &
-                                               rv$cell.richness$n >= input$n.surveys),]
-      rv$selected.cells <- survey.sites$cell
-      rv$logs <- paste(rv$logs, "Filtered sites from input parameters\n")
+      rv$selected.occs <- rv$sp.data[which(rv$sp.data$cell%in%rv$selected.cells), ]
+      rv$logs <- paste(rv$logs, "Selected", nrow(rv$selected.occs), "occurrences from", length(rv$selected.cells),"cells.\n")
       output$downloadFilteredTable <- downloadHandler("selectedOccData.csv",
                                                       content = function(file){
-                                                        write.csv(rv$sp.data[which(rv$sp.data$cell%in%rv$selected.cells), ], file, row.names = FALSE)
+                                                        write.csv(rv$selected.occs, file, row.names = FALSE)
                                                       })
     }
   })
 
-  #################################
-  #Module 3B: Reset well sampled cell selection
-  #################################
-
-  observeEvent(input$reset.sel.cells,{
-    if(is.null(rv$selected.cells)){
-      rv$logs <- paste(rv$logs,"Nothing to reset\n")
-      return()
-    } else {
-      rv$selected.cells <- NULL
-    }
-  })
 
   #################################
   #Module 3C: Run GDM
@@ -645,11 +669,10 @@ server <- function(input, output, session) {
 
   observeEvent(input$gdm.run, {
     print("Running GDM module")
-
-    if(is.null(rv$selected.cells)){
-      rv$logs <- paste(rv$logs, "Must select well sampled cells first\n")
+    if(is.null(rv$selected.occs)){
+      rv$logs <- paste(rv$logs, "Must filter occurrences first.\n")
     } else {
-      rv$gdm <- RunGDM(rv$sp.data[which(rv$sp.data$cell%in%rv$selected.cells), ], rv$env.vars, input$gdm.beta,
+      rv$gdm <- RunGDM(rv$selected.occs, rv$env.vars, input$gdm.beta,
                        input$gdm.dist, input$gdm.varsel, c("species", "decimalLongitude", "decimalLatitude"))
       wmcrs <- "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs"
 
@@ -785,7 +808,7 @@ server <- function(input, output, session) {
     }
     rv$ed.table <- rbind(rv$ed.table,
                          data.frame(x=rv$ed.res$selCoords[1,1], y=rv$ed.res$selCoords[1,2], initED=rv$ed.res$initED[1], outED=rv$ed.res$outED[1]))
-    rownames(rv$ed.table)<-1:nrow(rv$ed.table)
+    row.names(rv$ed.table)<-1:nrow(rv$ed.table)
     pal <- colorNumeric(c("#ffeda0","#feb24c","#f03b20"), values(rv$ed.res$out.raster),
                         na.color = "#00000000", alpha=TRUE)
     map %>%
