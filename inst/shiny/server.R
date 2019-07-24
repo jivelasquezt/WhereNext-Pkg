@@ -362,7 +362,7 @@ server <- function(input, output, session) {
                                              value="clean",
                                              tests=c("countries","capitals","centroids", "equal", "gbif",
                                                      "institutions", "outliers", "seas","zeros")))
-    if(!is.null(sp.data.clean)){
+    if(exists("sp.data.clean")){
       rv$sp.data <- sp.data.clean
       rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")
     } else {
@@ -374,6 +374,7 @@ server <- function(input, output, session) {
                                                                       countries = "countryCode",
                                                                       value="clean",
                                                                       tests=c("capitals","centroids", "equal", "gbif","institutions", "outliers", "seas","zeros"))
+               rv$sp.data <- rv$sp.data.clean
                rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")},
                error = function(e) {
                  rv$logs <-paste(rv$logs, e)
