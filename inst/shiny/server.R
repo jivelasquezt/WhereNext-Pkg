@@ -374,7 +374,7 @@ server <- function(input, output, session) {
                                                                       countries = "countryCode",
                                                                       value="clean",
                                                                       tests=c("capitals","centroids", "equal", "gbif","institutions", "outliers", "seas","zeros"))
-               rv$sp.data <- rv$sp.data.clean
+               rv$sp.data <- sp.data.clean
                rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")},
                error = function(e) {
                  rv$logs <-paste(rv$logs, e)
@@ -384,7 +384,7 @@ server <- function(input, output, session) {
              
     #Map cleaned records
     n.max <- min(nrow(rv$sp.data), 1e5)
-    disp.order <- sample(1:nrow(rv$sp.data),n.max)
+    disp.order <- sample(1:nrow(rv$sp.data), n.max)
     if(rv$isGBIF){
       labs <- lapply(disp.order, function(i) {
         paste0( tableStyle,
