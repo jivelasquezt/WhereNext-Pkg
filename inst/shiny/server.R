@@ -211,13 +211,13 @@ server <- function(input, output, session) {
     print("Running user occurrence upload module")
     rv$isGBIF <- FALSE
     if(input$fileType == "txt"){
-      n.recs <- WhereNext:::nrLinesFile(input$user.occs$datapath)
+      n.recs <- bigreadr::nlines(input$user.occs$datapath)
       if(n.recs > 2e6){
         rv$logs <- paste(rv$logs, "Your file has", n.recs,"records. WhereNext will subset randomly 2 million records from file\n")
         user.file <- SampleCSV(file=input$user.occs$datapath, percORn=2e6, sep=input$sep, dec=input$dec)
       } else {
         tryCatch(user.file <- read.delim(input$user.occs$datapath, sep=input$sep, dec=input$dec, header=TRUE,
-                                         as.is=T,row.names = NULL, quote="\"", fill=TRUE),
+                                         as.is=T,row.names = NULL, quote="", fill=FALSE),
                  error=function(e){
                    rv$logs<-paste(rv$logs,"Error:", e, "\n")
                    return()

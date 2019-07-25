@@ -11,13 +11,13 @@ GetGBIFData <- function(data.request, n.max = 2e6, subset.size = 2e6){
   filepath <- paste0(key, ".zip")
   if(file.exists(filepath)){
     unzip(filepath)
-    n.recs <- WhereNext:::nrLinesFile(paste0(key,".csv"))
+    n.recs <- bigreadr::nlines(paste0(key,".csv"))
     print(paste("occurrence file has", n.recs, "records"))
     if(n.recs > n.max){
       warning("subsetting to a maximum of 2 million records")
       occs <- SampleCSV(paste0(key, ".csv"), subset.size)
     } else {
-      occs <- read.delim(paste0(key, ".csv"), sep="\t", quote="", fill=TRUE)
+      occs <- read.delim(paste0(key, ".csv"), sep="\t", quote="", fill=FALSE)
     }
     file.remove(filepath)
     return(occs)

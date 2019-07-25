@@ -17,7 +17,7 @@ SampleCSV <- function(file, percORn, nrLines, sep="\t", dec=".", mxPerc=1) {
   if (.Platform$OS.type != "unix")
     stop("This function requires unix-based systems")
 
-  if (missing(nrLines)) nrLines <- nrLinesFile(file)
+  if (missing(nrLines)) nrLines <- bigreadr::nlines(file)
 
   if (percORn < 1)
     if (percORn > mxPerc)
@@ -30,7 +30,7 @@ SampleCSV <- function(file, percORn, nrLines, sep="\t", dec=".", mxPerc=1) {
   print("Read file into R")
   header <- read.delim(file, sep=sep, dec=dec, header=TRUE, nrows=1)
   dt <- read.delim(paste0(file,".tmp.csv"), sep=sep, dec=dec, col.names=colnames(header), as.is=TRUE, row.names=NULL,
-                   nrows=percORn, quote="", fill=TRUE)
+                   nrows=percORn, quote="", fill=FALSE)
   file.remove(paste0(file,".tmp.csv"))
   if (nrow(dt) != percORn)
     warning(paste("Expecting",percORn,"rows, but got",nrow(dt)))
