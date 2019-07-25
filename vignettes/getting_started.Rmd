@@ -89,7 +89,7 @@ The modify action allows the user to provide a set of alternative coordinates to
 
 ![Provide alternative coordinates for a suggestion](img/modify_option.png){ width=90% }
 
-Finally, you may look at the reduction in sampling gaps by looking at the initED and outED columns on the results tab, which indicate how well the environmental space is being sampled. Lower values indicate better representation by existing survey locations and suggestions.
+Finally, you may look at the contribution of additional sites to reduce total complementarity (meaning better sampling coverage) by looking at the plot in the results tab. Once the trend is stable, it may be assummed that additional sites have a low probability of adding species.
 
 ![](img/results_table.png){ width=90% }
 

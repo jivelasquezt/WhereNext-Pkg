@@ -165,8 +165,8 @@ server <- function(input, output, session) {
     })
     map %>% clearGroup(group="Occ data") %>%
       clearControls() %>%
-      addLayersControl(baseGroups=c("Basemap","Satellite"), overlayGroups = c("Occ data"),
-                       options = layersControlOptions(collapsed = FALSE)) %>%
+      addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data"),
+                       options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
       fitBounds(lng1=min(rv$sp.data$decimalLongitude, na.rm=T),
                 lng2=max(rv$sp.data$decimalLongitude, na.rm=T),
                 lat1=min(rv$sp.data$decimalLatitude, na.rm=T),
@@ -183,8 +183,7 @@ server <- function(input, output, session) {
 
   m <- leaflet(options=leafletOptions(preferCanvas=TRUE)) %>% setView(0, 0, zoom = 2) %>%
     addTiles(group = 'BaseMap') %>%
-    addProviderTiles('Esri.WorldImagery', group="Satellite") %>%
-    addLayersControl(baseGroups=c("Basemap", "Satellite"))
+    addLayersControl(baseGroups=c("Basemap"))
 
   output$map <- renderLeaflet(m)
   map <- leafletProxy("map")
@@ -317,8 +316,8 @@ server <- function(input, output, session) {
     })
     map %>% clearGroup(group="Occ data") %>%
       clearControls() %>%
-      addLayersControl(baseGroups=c("Basemap","Satellite"), overlayGroups = c("Occ data"),
-                       options = layersControlOptions(collapsed = FALSE)) %>%
+      addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data"),
+                       options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
       fitBounds(lng1=min(rv$sp.data$decimalLongitude, na.rm=T),
                 lng2=max(rv$sp.data$decimalLongitude, na.rm=T),
                 lat1=min(rv$sp.data$decimalLatitude, na.rm=T),
@@ -409,8 +408,8 @@ server <- function(input, output, session) {
 
     map %>% clearGroup(group="Occ data") %>%
       clearControls() %>%
-      addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data"),
-                       options = layersControlOptions(collapsed = FALSE)) %>%
+      addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data"),
+                       options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
       addCircleMarkers(lng = ~decimalLongitude, lat = ~decimalLatitude, data = rv$sp.data[disp.order, ], group = "Occ data",
                        fillColor = 'dodgerblue', fillOpacity = 0.6, weight = 2, radius = 5,
                        popup = lapply(labs, htmltools::HTML),
@@ -468,8 +467,8 @@ server <- function(input, output, session) {
       }
       map %>% clearGroup(group="Occ data") %>%
         clearControls() %>%
-        addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data"),
-                         options = layersControlOptions(collapsed = FALSE)) %>%
+        addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data"),
+                         options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
         addCircleMarkers(lng = ~decimalLongitude, lat = ~decimalLatitude, data = rv$sp.data[disp.order, ], group = "Occ data",
                          fillColor = 'dodgerblue', fillOpacity = 0.6, weight = 2, radius = 5,
                          popup = lapply(labs, htmltools::HTML),
@@ -582,9 +581,9 @@ server <- function(input, output, session) {
       map %>%
         clearGroup("Env data") %>%
         clearControls() %>%
-        addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data","Env data"),
-                         options = layersControlOptions(collapsed = FALSE)) %>%
         addRasterImage(rv$env.vars[[input$selVar]], opacity =0.8, group = "Env data") %>%
+        addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data","Env data"),
+                         options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
         fitBounds(lng1=raster::extent(rv$env.vars)@xmin,
                   lng2=raster::extent(rv$env.vars)@xmax,
                   lat1=raster::extent(rv$env.vars)@ymin,
@@ -640,8 +639,8 @@ server <- function(input, output, session) {
       map %>%
         clearControls() %>%
         clearGroup("Selected sites") %>%
-        addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data","Env data","Selected sites"),
-                         options = layersControlOptions(collapsed = FALSE)) %>%
+        addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data","Env data","Selected sites"),
+                         options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
         addCircleMarkers(lng = ~x, lat = ~y, data = survey.sites, group = "Selected sites",
                          fillColor = 'red', fillOpacity = 0.6, weight = 2, radius = 5,
                          label = lapply(labs, htmltools::HTML))
@@ -681,9 +680,9 @@ server <- function(input, output, session) {
 
       map %>%
         clearControls() %>%
-        addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data","Env data","Selected sites","GDM"),
-                         options = layersControlOptions(collapsed = FALSE)) %>%
-        addRasterImage(rv$gdm$gdm.map$pcaRast[[1]], colors=WhereNext:::rgbPalette(rv$gdm$gdm.map$pcaRast), opacity =0.8, group = "GDM")
+        addRasterImage(rv$gdm$gdm.map$pcaRast[[1]], colors=WhereNext:::rgbPalette(rv$gdm$gdm.map$pcaRast), opacity =0.8, group = "GDM") %>%
+        addLayersControl(baseGroups=c("Basemap"), overlayGroups = c("Occ data","Env data","Selected sites","GDM"),
+                         options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE))
       rv$logs <- paste(rv$logs, "Computed GDM from input occurrence and environmental data\n")
     }
     output$downloadGDM <- downloadHandler("gdm.tif", content = function(file){
@@ -739,17 +738,23 @@ server <- function(input, output, session) {
         rv$logs <- paste(rv$logs, "More than one cell with the highest complementarity. Selecting first cell.")
       }
       rv$ed.table <- data.frame(x=rv$ed.res$selCoords[1, 1], y= rv$ed.res$selCoords[1, 2],initED=rv$ed.res$initED[1], outED=rv$ed.res$outED[1])
-      pal <- colorNumeric(c("#ffeda0","#feb24c","#f03b20"), values(rv$ed.res$out.raster),
+      pal <- colorQuantile(c("#ffeda0","#feb24c","#f03b20"), n=5, values(rv$ed.res$out.raster),
                           na.color = "#00000000", alpha=TRUE)
       map %>%
         clearControls() %>%
-        addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data","Env data","Selected sites","GDM","ED Complementarity","Suggested"),
-                         options = layersControlOptions(collapsed = FALSE)) %>%
-        addRasterImage(rv$ed.res$out.raster, colors=pal, opacity=0.8, group = "ED Complementarity") %>%
+        addRasterImage(rv$ed.res$out.raster, colors=pal, opacity=0.8, group = "Complementarity") %>%
+        addLegend(pal = pal, values = values(rv$ed.res$out.raster), title = "Complementarity", position = "bottomright",
+                  labFormat = labelFormat(digits=1), opacity = 0.8, group = "Legend") %>%
+        addLayersControl(overlayGroups = c("Occ data","Env data","Selected sites","GDM","ED Complementarity","Suggested"), baseGroups=c("Basemap"), 
+                         options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
         addCircleMarkers(lng = ~x, lat = ~y, data = rv$ed.table, group = "Suggested",
                          fillColor = 'cyan', fillOpacity = 0.6, weight = 2, radius = 5,
                          label = paste("Site: ", 1:nrow(rv$ed.table)))
       rv$logs <- paste(rv$logs, "Computed ED Complementarity\n")
+      ed.diff <- rv$ed.table$initED[1] - rv$ed.table$outED[1]
+      output$plot <- renderPlot({plot(0:nrow(rv$ed.table),c(rv$ed.table$initED[1],rv$ed.table$outED), type="l",
+           xlab="Sites selected", ylab="Total complementarity", lwd=2, col="blue",
+           main = paste("Iteration difference =", round(ed.diff, 2)))})
     }
   })
 
@@ -810,13 +815,16 @@ server <- function(input, output, session) {
     rv$ed.table <- rbind(rv$ed.table,
                          data.frame(x=rv$ed.res$selCoords[1,1], y=rv$ed.res$selCoords[1,2], initED=rv$ed.res$initED[1], outED=rv$ed.res$outED[1]))
     row.names(rv$ed.table)<-1:nrow(rv$ed.table)
-    pal <- colorNumeric(c("#ffeda0","#feb24c","#f03b20"), values(rv$ed.res$out.raster),
-                        na.color = "#00000000", alpha=TRUE)
+    pal <- colorQuantile(c("#ffeda0","#feb24c","#f03b20"), n=5, values(rv$ed.res$out.raster),
+                         na.color = "#00000000", alpha=TRUE)
     map %>%
-      clearGroup(group =c("ED Complementarity","Suggested")) %>%
-      addLayersControl(baseGroups=c("Basemap", "Satellite"), overlayGroups = c("Occ data","Env data","Selected sites","GDM", "ED Complementarity","Suggested"),
-                       options = layersControlOptions(collapsed = FALSE)) %>%
-      addRasterImage(rv$ed.res$out.raster, colors=pal, opacity=0.8, group = "ED Complementarity") %>%
+      clearControls() %>%
+      clearGroup(group =c("Complementarity", "Suggested")) %>%
+      addRasterImage(rv$ed.res$out.raster, colors=pal, opacity=0.8, group = "Complementarity") %>%
+      addLegend(pal = pal, values = values(rv$ed.res$out.raster), title = "Complementarity", position = "bottomright",
+                labFormat = labelFormat(digits=1), opacity = 0.8, group = "Legend") %>%
+      addLayersControl(overlayGroups = c("Occ data","Env data","Selected sites","GDM", "ED Complementarity","Suggested"),baseGroups=c("Basemap"), 
+                       options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
       addCircleMarkers(lng = ~x, lat = ~y, data = rv$ed.table, group = "Suggested",
                        fillColor = 'cyan', fillOpacity = 0.6, weight = 2, radius = 5,
                        label = paste("Site: ", 1:nrow(rv$ed.table)))
@@ -825,6 +833,10 @@ server <- function(input, output, session) {
                                                   content = function(file){
                                                     write.csv(rv$ed.table, file, row.names = FALSE)
                                                   })
+    ed.diff <- rv$ed.table$outED[nrow(rv$ed.table)-1] - rv$ed.table$outED[nrow(rv$ed.table)]
+    output$plot <- renderPlot({plot(0:nrow(rv$ed.table),c(rv$ed.table$initED[1],rv$ed.table$outED), type="l",
+         xlab="Sites selected", ylab="Total complementarity", lwd=2, col="blue", 
+         main = paste("Iteration difference =", round(ed.diff,2)))})
   })
 
   observeEvent(input$map_click, {

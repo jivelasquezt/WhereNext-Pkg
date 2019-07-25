@@ -156,7 +156,8 @@ ui <- navbarPage(theme=shinythemes::shinytheme('sandstone'), id='tabs', collapsi
                                                                                h4(HTML("<b>Citation:<b>")),
                                                                                verbatimTextOutput("citation")),
                                                               conditionalPanel("input.tabs == 3", verbatimTextOutput("gdmSummary")),
-                                                              conditionalPanel("input.tabs == 4", DT::dataTableOutput("ed.table"))
+                                                              conditionalPanel("input.tabs == 4", plotOutput("plot"))
+                                            #                  conditionalPanel("input.tabs == 4", DT::dataTableOutput("ed.table"))
                                                      )
                                          )
                         )
