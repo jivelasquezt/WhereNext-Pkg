@@ -124,12 +124,12 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
   print(paste("Created",length(demand.pts),"regularly spaced demand points"))
 
   #Test if objects will fit in memory
-  lst.obj.sz <- object.size(matrix(rnorm(length(demand.pts)) * length(usmpled), nrow=length(demand.pts), ncol=length(usmpled))) * 3
-  test.mem <- lst.obj.sz > benchmarkme::get_ram()
-  if(test.mem){
-    print(paste("Cannot allocate extra", format(lst.obj.sz, standard="SI", units="GB"), "in memory"))
-    return(lst.obj.sz)
-  }
+#  lst.obj.sz <- object.size(matrix(rnorm(length(demand.pts)) * length(usmpled), nrow=length(demand.pts), ncol=length(usmpled))) * 3
+#  test.mem <- lst.obj.sz > benchmarkme::get_ram()
+#  if(test.mem){
+#    print(paste("Cannot allocate extra", format(lst.obj.sz, standard="SI", units="GB"), "in memory"))
+#    return(lst.obj.sz)
+#  }
 
   #Calculate distance from demand points (rows) to sampled sites
   print("Computing distances from demand points to survey sites")

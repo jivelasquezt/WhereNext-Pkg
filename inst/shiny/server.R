@@ -131,6 +131,9 @@ server <- function(input, output, session) {
                                select=c("gbifID", "species", "decimalLongitude" ,"decimalLatitude", "eventDate","countryCode","locality","recordedBy")))
     occ.table$individualCount <- 1
     occ.table$eventDate <- lubridate::as_date(occ.table$eventDate)
+    occ.table <- occ.table[!is.na(occ.table$eventDate), ]
+    rv$logs <-paste(rv$logs, nrow(occ.table), "records remain after removing records without valid date\n")
+    
     row.names(occ.table) <- 1:nrow(occ.table)
     occ.table$countryCode <- ISOcodes::ISO_3166_1$Alpha_3[match(occ.table$countryCode, ISOcodes::ISO_3166_1$Alpha_2)] #Change country code to ISO3 for verification in CoordinateCleaner
 
@@ -146,7 +149,6 @@ server <- function(input, output, session) {
     rec.sel <- which(!is.na(ind.coords[, 2]))
 
     occ.table <- occ.table[rec.sel, ]
-
     rv$sp.data <- occ.table
     rv$sp.data.orig <- occ.table
     rv$logs <- paste(rv$logs,"After excluding records outside study area, ", nrow(occ.table), " records remain\n")
@@ -206,24 +208,42 @@ server <- function(input, output, session) {
   #Module 1B: User file upload
   ##############################
 
-  observeEvent(input$user.occs,{
+  observeEvent(input$user.occs.go,{
     print("Running user occurrence upload module")
+    #Read text file
     rv$isGBIF <- FALSE
     if(input$fileType == "txt"){
-      n.recs <- bigreadr::nlines(input$user.occs$datapath)
-      if(n.recs > 2e6){
-        rv$logs <- paste(rv$logs, "Your file has", n.recs,"records. WhereNext will subset randomly 2 million records from file\n")
-        user.file <- SampleCSV(file=input$user.occs$datapath, percORn=2e6, sep=input$sep, dec=input$dec)
+      tryCatch(n.recs <- bigreadr::nlines(input$user.occs),
+               error=function(e){
+                 rv$logs <- paste(rv$logs, "Error:", e, "\n")
+
+               })
+      if(!exists("n.recs")){
+        rv$logs <- paste(rv$logs, "An error occurred reading file:", input$user.occs, ".\n Check file format and use forward slash as path separator.\n")
+        return()
+      }
+      if(n.recs > 1e6){
+        rv$logs <- paste(rv$logs, "Your file has", n.recs,"records. WhereNext will attempt to split and read the file and individualCount will be ignored\n")
+        tryCatch(user.file <- bigreadr::big_fread1(input$user.occs, 
+                                every_nlines=1000000, 
+                                .transform = function(x) {
+                                  res<-dplyr::select(x, c("gbifID", "species", "decimalLongitude" ,"decimalLatitude", "eventDate","countryCode","locality","recordedBy"))
+                                  res<-dplyr::distinct(res,species, decimalLongitude ,decimalLatitude, eventDate,countryCode, .keep_all=T)
+                                  return(res)
+                                }),
+                 error=function(e){
+                   rv$logs <- paste(rv$logs, "Error:", e, "\n")
+                 })
       } else {
-        tryCatch(user.file <- read.delim(input$user.occs$datapath, sep=input$sep, dec=input$dec, header=TRUE,
-                                         as.is=T,row.names = NULL, quote="", fill=FALSE),
+        tryCatch(user.file <- read.delim(input$user.occs, sep=input$sep, dec=input$dec, header=TRUE,
+                                         as.is=T,row.names = NULL, quote="", fill=FALSE, as.is=TRUE),
                  error=function(e){
                    rv$logs<-paste(rv$logs,"Error:", e, "\n")
                    return()
                    })
       }
     } else if(input$fileType == "xls"){
-      tryCatch(user.file <- openxlsx::read.xlsx(input$user.occs$datapath, sheet = 1, colNames = TRUE),
+      tryCatch(user.file <- openxlsx::read.xlsx(input$user.occs, sheet = 1, colNames = TRUE),
                error=function(e){
                  rv$logs<-paste(rv$logs,"Error:", e, "\n")
                  return()}
@@ -233,6 +253,8 @@ server <- function(input, output, session) {
       rv$logs <- paste(rv$logs,"An error occurred reading file. Check file format.\n")
       return()
     }
+    
+    #Checking columns
     if(is.null(user.file$individualCount)){
       rv$logs <- paste(rv$logs,"individualCount column not found. Assuming data is presence-only\n")
       user.file$individualCount <- 1
@@ -244,17 +266,25 @@ server <- function(input, output, session) {
     if(all(check.cols)){
       user.file <- unique(subset(user.file, select=required.cols))
       user.file$eventDate <- lubridate::as_date(user.file$eventDate)
+      if(length(which(is.na(user.file$eventDate))) == nrow(user.file)){
+        rv$logs <-paste(rv$logs, "All dates failed to parse. Check that your dates are in ymd or ymd HM format and try again\n")
+        return()
+      } else {
+        user.file <- user.file[!is.na(user.file$eventDate), ]
+        rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after removing records without date\n")
+      }
     } else {
       notfound <- required.cols[which(!check.cols)]
       rv$logs <- paste(rv$logs, "Column(s):", paste(notfound, collapse = ", "), "not found. File not imported.\n")
       return()
     }
     rv$logs <- paste(rv$logs, "Imported occurrence file with", nrow(user.file), "records.\n")
+    
     #Remove rows with empty species cell
     user.file <- user.file[!is.na(user.file$species) & user.file$species != "", ]
     rv$logs <-paste(rv$logs, nrow(user.file), "records remain after removing records with empty species cell\n")
 
-    #Refine records by shapefile
+    #Get study area shapefile
     if(input$aoiSrc=="aoi.ctr"){
       ind.aoi <- which(ISOcodes::ISO_3166_1$Name == input$country.sel)
       tryCatch(rv$aoi <- raster::getData(name="GADM",country=ISOcodes::ISO_3166_1$Alpha_3[ind.aoi], level=0),
@@ -302,6 +332,7 @@ server <- function(input, output, session) {
     row.names(user.file) <- 1:nrow(user.file)
     rv$sp.data.orig <- user.file
     rv$sp.data <- user.file
+    
     #Map records
     n.max <- min(nrow(rv$sp.data), 1e5)
     disp.order <- sample(1:nrow(rv$sp.data),n.max)
@@ -345,11 +376,6 @@ server <- function(input, output, session) {
       rv$logs <- paste(rv$logs, "No occurrences left\n")
       return()
     }
-
-    #Standardize dates and eliminate records without date
-    rv$sp.data$eventDate <- lubridate::as_date(rv$sp.data$eventDate)
-    rv$sp.data <- rv$sp.data[!is.na(rv$sp.data$eventDate), ]
-    rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after removing records without date\n")
 
     #Run coordinate cleaner
     row.names(rv$sp.data) <- 1:nrow(rv$sp.data)
@@ -730,12 +756,12 @@ server <- function(input, output, session) {
                                  1000,
                                  "2",
                                  candidate.sites)
-        if(class(rv$ed.res)=="object_size"){
-          rv$logs <- paste(rv$logs,"Cannot allocate extra", format(rv$ed.res, standard="SI", units="GB"), "in memory.\n Use larger cell size or reduce extent and try again.\n")
-        }
+#        if(class(rv$ed.res)=="object_size"){
+#          rv$logs <- paste(rv$logs,"Cannot allocate extra", format(rv$ed.res, standard="SI", units="GB"), "in memory.\n Use larger cell size or reduce extent and try again.\n")
+#        }
       }
-      if(nrow(rv$ed.res$selCoords)==0){
-        rv$logs <- paste(rv$logs, "More than one cell with the highest complementarity. Selecting first cell.")
+      if(nrow(rv$ed.res$selCoords)>1){
+        rv$logs <- paste(rv$logs, "More than one cell with the highest complementarity. Selecting first cell.\n")
       }
       rv$ed.table <- data.frame(x=rv$ed.res$selCoords[1, 1], y= rv$ed.res$selCoords[1, 2],initED=rv$ed.res$initED[1], outED=rv$ed.res$outED[1])
       pal <- colorQuantile(c("#ffeda0","#feb24c","#f03b20"), n=5, values(rv$ed.res$out.raster),
@@ -755,6 +781,7 @@ server <- function(input, output, session) {
       output$plot <- renderPlot({plot(0:nrow(rv$ed.table),c(rv$ed.table$initED[1],rv$ed.table$outED), type="l",
            xlab="Sites selected", ylab="Total complementarity", lwd=2, col="blue",
            main = paste("Iteration difference =", round(ed.diff, 2)))})
+      rv$stop.wn <- FALSE
     }
   })
 
@@ -762,6 +789,10 @@ server <- function(input, output, session) {
   #Module 4B: Iterative selection of sites
   #################################
   observeEvent(input$ed.go,{
+    if(rv$stop.wn){
+      rv$logs <- paste(rv$logs, "No more cells to select. WhereNext won't suggest any further sites on current parameters.\n")
+      return()
+    }
     print("Running iterative site selection module")
     if(is.null(rv$ed.res)){
       rv$logs <- paste(rv$logs, "Must Run ED first\n")
@@ -811,6 +842,8 @@ server <- function(input, output, session) {
     }
     if(nrow(rv$ed.res$selCoords)>1){
       rv$logs <- paste(rv$logs, "More than 1 cell has the highest complementarity. Selecting first cell.\n")
+      rv$stop.wn <- TRUE
+      return()
     }
     rv$ed.table <- rbind(rv$ed.table,
                          data.frame(x=rv$ed.res$selCoords[1,1], y=rv$ed.res$selCoords[1,2], initED=rv$ed.res$initED[1], outED=rv$ed.res$outED[1]))

@@ -11,8 +11,8 @@ Depends: R (>= 3.5.3), leaflet, shiny
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 Imports:
-  benchmarkme,
   bigreadr,
+  bit64,
   CoordinateCleaner,
   DT,
   gdm,

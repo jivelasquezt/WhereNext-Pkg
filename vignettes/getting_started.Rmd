@@ -18,7 +18,7 @@ vignette: >
 To optimally fill gaps in biodiversity knowledge, *WhereNext* uses the finding by Faith & Walker (1996) that the number of species sampled by a set of sites will be maximized if on average the biological distance from any individual site to its nearest neighbor is as small as possible. Thus, each iteration of the "Recommend Survey" component of *WhereNext*, will find the grid cell that minimizes the biological distance to all already sampled places, in other words, the most complementary. 
 
 ## Layout
-![](img/WhereNext_orientation640High.gif)
+#![](img/WhereNext_orientation640High.gif)
 
 *WhereNext* layout is divided into five sections. 1. Components (top bar), are major steps in the workflow of the app and are meant to be run in order. 2. Control panel (left), which consists of modules that also need to be run sequentially, unless they're optional. This is where interaction with the user takes place. 3. Message box, which provides information, warnings and error messages. 4. Results, which are displayed in three tabs main window: map, to display spatial results: occurrence table, to browse through the occurrence data and results, which displays component dependent results. 5. Spinning wheel, which indicates R is running a computation and will display results after is finished.
 
@@ -47,7 +47,7 @@ Then, click on the GBIF login button <span style="color:blue;background:aqua">**
 
 Once the download is finished, occurrences will be shown in the map and occurrence table tabs, and the citation for your download will be available in the results tab. By clicking on the colored clusters on the map, you may inspect individual occurrences. Further, you can access all record info available in GBIF by clicking on the ID link.
 
-![](img/occ_browsing_480high.gif){ width=90% }
+#![](img/occ_browsing_480high.gif){ width=90% }
 
 Finally, you may run the clean data function. This will run `countries`, `capitals`, `centroids`, `equal`, `gbif`, `institutions`, `outliers`, `seas` and `zeros` tests available in CoordinateCleaner. To learn more about these tests check the *CoordinateCleaner* package documentation (https://cran.r-project.org/web/packages/CoordinateCleaner/index.html).
 

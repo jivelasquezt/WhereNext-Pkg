@@ -9,8 +9,6 @@
 #' @param pwd your GBIF password. Required.
 #' @param country ISO2 code of the coutry to download data from.
 #' @param custom.shp a SpatialPolygons* object to download data from. Ignored if country is not NULL.
-#' @param n.max integer. The maximum number of records before triggering the subset option.
-#' @param subset.size integer. The number of records to subset randomly from file
 #' @return a list with:
 #' \describe{
 #'   \item{occ.table}{Occurrence table for the defined taxon key and area}
@@ -43,7 +41,7 @@
 #' }
 #' @export
 
-DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp, n.max = 2e6, subset.size = 2e6){
+DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
   if(!is.null(country)){
     if(country %in% ISOcodes::ISO_3166_1$Alpha_2){
       data.request <- rgbif::occ_download(paste0('taxonKey = ', key),
@@ -84,6 +82,6 @@ DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp, n.max 
   }
   data.grab <- rgbif::occ_download_get(data.request, overwrite = T)
   citation <- renderPrint({rgbif::gbif_citation(data.grab)$download})
-  occ.table <- GetGBIFData(data.request, n.max=n.max, subset.size)
+  occ.table <- GetGBIFData(data.request)
   return(list(occ.table=occ.table, citation=citation))
 }
