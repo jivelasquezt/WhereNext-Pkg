@@ -14,8 +14,8 @@ GetGBIFData <- function(data.request){
     occs<-bigreadr::big_fread1(paste0(key,".csv"), 
                       every_nlines=1000000, 
                       .transform = function(x) {
-                        res<-dplyr::select(x, c("gbifID", "species", "decimalLongitude" ,"decimalLatitude", "eventDate","countryCode","locality","recordedBy"))
-                        res<-dplyr::distinct(res,species, decimalLongitude ,decimalLatitude, eventDate,countryCode, .keep_all=T)
+                        res<-dplyr::select(x, c("gbifID","taxonRank", "species", "decimalLongitude" ,"decimalLatitude", "eventDate","countryCode","locality","recordedBy","coordinateUncertaintyInMeters"))
+                        res<-dplyr::distinct(res, species, decimalLongitude, decimalLatitude, eventDate, countryCode, .keep_all=T)
                         return(res)
                       })
     file.remove(filepath)
