@@ -1,12 +1,11 @@
 ---
 title: "Getting started with *WhereNext*"
 author: "Jorge Velásquez-Tibatá"
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
-vignette: |
-  %\VignetteIndexEntry{Getting started with WhereNext} %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with WhereNext}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 ## Presentation
 
@@ -33,6 +32,7 @@ Open function specific help by running `help(package="WhereNext")`.
 
 ## Layout
 ![](img/layout.png){ width=90% }
+
 *WhereNext* layout is divided into five sections. <span style="color:blue;background:aqua">**[1]**</span>. Components, which are major steps in the workflow of the app and are meant to be run in order. <span style="color:blue;background:aqua">**[2]**</span>. Control panel, which consists of modules that also need to be run sequentially, unless they're optional. This is where interaction with the user takes place. <span style="color:blue;background:aqua">**[3]**</span>. Message box, which provides information, warnings and error messages. <span style="color:blue;background:aqua">**[4]**</span>. Results, consisting of three tabs: map (spatial data), occurrence table (biological data), results (component dependent results). <span style="color:blue;background:aqua">**[5]**</span>. Spinning wheel, which indicates R is busy computing results. Credit is due to package *Wallace* (https://wallaceecomod.github.io/) after which *WhereNext* layout is modeled.
 
 Results from all modules may be downloaded by clicking on their respective download button ![](img/download_button.png){ width=4% }.
