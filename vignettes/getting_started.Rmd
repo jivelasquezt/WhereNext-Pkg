@@ -1,12 +1,12 @@
 ---
 title: "Getting started with *WhereNext*"
-author:
-  Jorge Velásquez-Tibatá
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Getting started with WhereNext}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+author: "Jorge Velásquez-Tibatá"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+vignette: |
+  %\VignetteIndexEntry{Getting started with WhereNext} %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
 ---
 ## Presentation
 
@@ -18,6 +18,18 @@ vignette: >
 
 
 To optimally fill gaps in biodiversity knowledge, *WhereNext* uses the finding by Faith & Walker (1996) that the number of species sampled by a set of sites will be maximized if on average the biological distance from any individual site to its nearest neighbor is as small as possible. Thus, each iteration of the "Recommend Survey" component of *WhereNext*, will find the grid cell that minimizes the biological distance to all already sampled places, in other words, the most complementary. 
+
+## Installation
+
+Install and run the WhereNext shiny app using the following R code.
+
+```R
+#install.packages("devtools") #Run this line if not installed
+devtools::install_github("jivelasquezt/WhereNext-Pkg", build_vignettes = TRUE)
+library(WhereNext)
+RunWhereNext()
+```
+Open function specific help by running `help(package="WhereNext")`.
 
 ## Layout
 ![](img/layout.png){ width=90% }
