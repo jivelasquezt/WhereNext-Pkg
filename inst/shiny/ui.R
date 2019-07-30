@@ -47,7 +47,7 @@ ui <- navbarPage(theme=shinythemes::shinytheme('sandstone'), id='tabs', collapsi
                                                                                     radioButtons("dec", "Decimal delimiter", choices=list("(.) period" = '.',"(,) comma" = ','), inline=T)
                                                                    ),
                                                                    textInput("user.occs", "Enter path to occurrence file:"),
-                                                                   actionButton("user.occs.go", "Go")
+                                                                   actionButton("user.occs.go", "Load occs")
                                                   ),
                                                   HTML('<hr>'),
                                                   h4(HTML("<b>1.3 Clean occurrence data (optional)<b>")),

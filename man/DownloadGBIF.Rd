@@ -4,8 +4,7 @@
 \alias{DownloadGBIF}
 \title{Download GBIF data}
 \usage{
-DownloadGBIF(key, user, user.email, pwd, country, custom.shp,
-  n.max = 2e+06, subset.size = 2e+06)
+DownloadGBIF(key, user, user.email, pwd, country, custom.shp)
 }
 \arguments{
 \item{key}{a gbif taxon key obtained through the rgbif::name_backbone function. Required}
@@ -19,10 +18,6 @@ DownloadGBIF(key, user, user.email, pwd, country, custom.shp,
 \item{country}{ISO2 code of the coutry to download data from.}
 
 \item{custom.shp}{a SpatialPolygons* object to download data from. Ignored if country is not NULL.}
-
-\item{n.max}{integer. The maximum number of records before triggering the subset option.}
-
-\item{subset.size}{integer. The number of records to subset randomly from file}
 }
 \value{
 a list with:

@@ -4,14 +4,10 @@
 \alias{GetGBIFData}
 \title{Get GBIF data}
 \usage{
-GetGBIFData(data.request, n.max = 2e+06, subset.size = 2e+06)
+GetGBIFData(data.request)
 }
 \arguments{
 \item{data.request}{an occ_download object returned by the rgbif occ_download function}
-
-\item{n.max}{integer. The maximum number of records before triggering the subset option.}
-
-\item{subset.size}{integer. The number of records to subset randomly from file}
 }
 \value{
 a data.frame of downloaded gbif data

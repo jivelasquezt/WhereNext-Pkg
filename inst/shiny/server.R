@@ -236,7 +236,7 @@ server <- function(input, output, session) {
                  })
       } else {
         tryCatch(user.file <- read.delim(input$user.occs, sep=input$sep, dec=input$dec, header=TRUE,
-                                         as.is=T,row.names = NULL, quote="", fill=FALSE, as.is=TRUE),
+                                         stringsAsFactors=F, row.names = NULL, quote="", fill=FALSE, as.is=TRUE),
                  error=function(e){
                    rv$logs<-paste(rv$logs,"Error:", e, "\n")
                    return()
@@ -398,7 +398,7 @@ server <- function(input, output, session) {
                                                                       species="species",
                                                                       countries = "countryCode",
                                                                       value="clean",
-                                                                      tests=c("capitals","centroids", "equal", "gbif","institutions", "outliers", "seas","zeros"))
+                                                                      tests=c("capitals","centroids", "equal", "gbif","institutions", "seas","zeros"))
                rv$sp.data <- sp.data.clean
                rv$logs <-paste(rv$logs, nrow(rv$sp.data), "records remain after running CoordinateCleaner\n")},
                error = function(e) {

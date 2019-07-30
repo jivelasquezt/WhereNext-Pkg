@@ -12,7 +12,8 @@ GetGBIFData <- function(data.request){
     n.recs <- bigreadr::nlines(paste0(key,".csv"))
     print(paste("occurrence file has", n.recs, "records"))
     occs<-bigreadr::big_fread1(paste0(key,".csv"), 
-                      every_nlines=1000000, 
+                      every_nlines=1000000,
+                      integer64="double",
                       .transform = function(x) {
                         res<-dplyr::select(x, c("gbifID","taxonRank", "species", "decimalLongitude" ,"decimalLatitude", "eventDate","countryCode","locality","recordedBy","coordinateUncertaintyInMeters"))
                         res<-dplyr::distinct(res, species, decimalLongitude, decimalLatitude, eventDate, countryCode, .keep_all=T)

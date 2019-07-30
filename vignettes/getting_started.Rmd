@@ -87,11 +87,11 @@ By default, *WhereNext* suggest sites to sample anywhere in the study area. Howe
 
 For palms, we will find suggestions anywhere in the study area. To do so, first click on the "Compute complementarity button" <span style="color:blue;background:aqua">**[1]**</span>. This will add a layer named "Complementarity" to the map (be sure to deactivate layers on top to see it) as well as the first suggestion by *WhereNext* represented by a _light blue dot_. After this, you can proceed iteratively, by selecting an action <span style="color:blue;background:aqua">**[2]**</span> among "add"", "reject", and "modify" and clicking on "go" <span style="color:blue;background:aqua">**[3]**</span>. The decision among actions may be based on their suitability for sampling (e.g. some sites may have visiting restrictions, or be hard to reach, or not have currently suitable vegetation).
 
-!["First iteration"](img/complemetarity_iter1.png){ width=90% }
+![](img/complemetarity_iter1.png){ width=90% }
 
 The modify action allows the user to provide a set of alternative coordinates to replace the suggested site. To do so, select "modify" <span style="color:blue;background:aqua">**[1]**</span>, click on the map to get the coordinates of the desired replacement site <span style="color:blue;background:aqua">**[2]**</span> and click on "go" <span style="color:blue;background:aqua">**[3]**</span> to get the next suggestion.
 
-![Provide alternative coordinates for a suggestion](img/modify_option.png){ width=90% }
+![](img/modify_option.png){ width=90% }
 
 Finally, you may look at the contribution of additional sites to reduce total complementarity (meaning better sampling coverage) by looking at the plot in the results tab. Once the trend is stable, it may be assummed that additional sites have a low probability of adding species.
 
