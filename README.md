@@ -6,7 +6,8 @@ Install and run the WhereNext shiny app using the following R code.
 
 ```R
 install.packages("devtools")
-devtools::install_github("jivelasquezt/WhereNext-Pkg")
+devtools::install_github("jivelasquezt/WhereNext-Pkg", build_vignettes = TRUE)
 library(WhereNext)
 RunWhereNext()
 ```
+Open package vignette by running `browseVignettes(package="WhereNext")`
