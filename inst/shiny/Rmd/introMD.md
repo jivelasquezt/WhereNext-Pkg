@@ -1,6 +1,6 @@
 ## User guide
 
-Welcome to *WhereNext*, a recommendation system  designed to optimize the process of filling gaps in biodiversity knowledge. *WhereNext* will guide you through the process of developing a Generalized Dissimilarity Model (GDM) for your group and area of interest (Ferrier et al. 2007) and identifying iteratively survey sites that maximize your potential to record new species.
+Welcome to *WhereNext*, a recommendation system  designed to optimize the process of filling gaps in biodiversity knowledge. *WhereNext* will guide you through the process of developing a Generalized Dissimilarity Model (GDM) for your group and area of interest (Ferrier et al. 2007) and identifying interactively survey sites that maximize your potential to record new species.
 
 To get started, browse components at the top in order through tabs and execute numbered modules in each component.
 
@@ -29,7 +29,7 @@ To get started, browse components at the top in order through tabs and execute n
 
 #### 3. Run GDM
 
- 1. Estimate cell stats: in *WhereNext*, occurrences are aggregated spatially into cells, according to the environmental data resolution. For each cell, the number of surveys, species richness and sampling completeness is calculated. Sampling completeness varies between 0 (incomplete) and 1 (complete), and is the ratio of observed species richness over expected species richness, estimated by the jackniffe2 non-parametric estimator implemented in package *vegan* (Oksanen et al. 2019).  By default, the number of surveys in each cell is the number of dates in which at least an occurrence was reported. You may change this behavior by manipulating the `eventDate` field of your occurrence file outside *WhereNext* (however, it must parse to a valid date format).
+ 1. Estimate cell stats: in *WhereNext*, occurrences are aggregated spatially into cells, according to the environmental data resolution. For each cell, the number of surveys, species richness and sampling completeness is calculated. Sampling completeness varies between 0 (incomplete) and 1 (complete), and is the ratio of observed species richness over expected species richness, estimated by the chao2 non-parametric estimator implemented in package *vegan* (Oksanen et al. 2019).  By default, the number of surveys in each cell is the number of dates in which at least an occurrence was reported. You may change this behavior by manipulating the `eventDate` field of your occurrence file outside *WhereNext* (however, it must parse to a valid date format).
 
  2. Select sites with complete surveys: GDM relies on proper estimation of the dissimilarity between sampled cells. To do so, only cells that have been sufficiently sampled should be considered in GDM development. *WhereNext* allows you to place lower bounds on the cells to include in the analysis, based on the number of surveys, its richness and/or sampling completeness. Using the sliders, explore the effect of selecting different lower bounds based on the knowledge of your study system and data availability. When satisfied, pulse the "select sites" button.
 
@@ -39,7 +39,7 @@ To get started, browse components at the top in order through tabs and execute n
 
 1. Find complementary sites: you have two choices to find complementary survey sites, either to select from new survey areas anywhere in the study area or to select survey areas from a list of sites. The latter option is appropriate to prioritize sampling when there’s a predefined list of sites that can be visited. This list must be a .csv file with only  two columns, `decimalLongitude` and `decimalLatitude`. After clicking on the “Compute ED” button, a layer will appear on the map depicting the most complementary areas to existing survey sites and the first sampling suggestion. 
 
-2. Select sites iteratively: after computing the first complementarity surface, you may either add the site to a list of sites to survey, reject the suggestion or modify the suggestion by entering alternative coordinates. If using the modify option, clicking on the map will populate the latitude and longitude fields. The selected sites to survey are shown in the map and results tab.
+2. Select sites interactively: after computing the first complementarity surface, you may either add the site to a list of sites to survey, reject the suggestion or modify the suggestion by entering alternative coordinates. If using the modify option, clicking on the map will populate the latitude and longitude fields. The selected sites to survey are shown in the map and results tab.
 
 ### References
 Ferrier, S., Manion, G., Elith, J., & Richardson, K. (2007). Using generalized dissimilarity modelling to analyse and predict patterns of beta diversity in regional biodiversity assessment. Diversity and distributions, 13(3), 252-264.
