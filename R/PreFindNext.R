@@ -164,6 +164,9 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
   rm(m1, gdm.pred2, site.grid2)
   gc()
   iniTotalED <- sum(nnDistance)   #Compute initial ED value
+  
+  keep.cols <- which(!is.na(apply(m2, 2, sum))) #remove NA columns
+  m2 <- m2[, keep.cols]
 
   #Compute ED complementarity of unsampled cells.
   m3 <- m2[, 2:ncol(m2)]
@@ -172,22 +175,22 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
   m3 <- (ind.mat)*imdv.mat + m3*(!ind.mat)
   ed.comp <- apply(m3, 2, sum)
   ed.comp.dif <- iniTotalED - ed.comp
+  
   #Nearest neighbor distance of demand points to survey site + site that minimizes total ED complementarity
   nnDistanceUpdated <- m3[, which.min(ed.comp)]
-  outTotalED <- sum(nnDistanceUpdated)
+  outTotalED <- sum(nnDistanceUpdated) 
 
   #Create ED complementarity raster
-  out.raster[as.numeric(names(ed.comp.dif))] <- ed.comp.dif
+  out.raster[as.numeric(names(ed.comp.dif))] <- ed.comp.dif 
 
   if(search.type==2){ #For search type 2, remove values for cells not sampled and not candidate
     out.raster.tmp <- out.raster
     out.raster.tmp[] <- NA
     out.raster.tmp[c(cell2add, sampled)] <- out.raster[c(cell2add, sampled)]
     out.raster <- out.raster.tmp
-    plot(out.raster.tmp)
     rm(out.raster.tmp)
   }
-  selCoords <- xyFromCell(out.raster, raster::which.max(out.raster)) #Coordinates of site that is most complementary
+  selCoords <- xyFromCell(out.raster, as.numeric(names(ed.comp)[which.min(ed.comp)])) #Coordinates of site that is most complementary
 
   print(difftime(Sys.time(), start.time, units = "mins"))
   return(list(out.raster=out.raster, initED=iniTotalED, outED=outTotalED, selCoords=selCoords, params=list(nnDistance=nnDistance, nnDistanceUpdated=nnDistanceUpdated, m2=m2)))

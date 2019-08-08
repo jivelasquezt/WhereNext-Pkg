@@ -93,10 +93,12 @@
 FindNext <- function(pre.params, action, custom.coords=NULL){
   start.time <- Sys.time()
   m2 <- pre.params$params$m2
-  if((pre.params$initED - pre.params$outED) < 1){
-    return("No gain in complementarity from adding further sites")
+  if(ncol(m2) < 4){
+    return("No sites left to prioritize")
   }
   if(action == "add"){
+    ind.cell<-cellFromXY(pre.params$out.raster, pre.params$selCoords)
+    m2[, which(colnames(m2) == ind.cell)] <- NULL #Remove added cell
     m3 <- m2[, 2:ncol(m2)]
     imdv.mat <- matrix(rep(pre.params$params$nnDistanceUpdated, ncol(m3)), ncol = ncol(m3))
     ind.mat <- m3 > pre.params$params$nnDistanceUpdated
@@ -112,10 +114,10 @@ FindNext <- function(pre.params, action, custom.coords=NULL){
     ind.cell <- cellFromXY(pre.params$out.raster, pre.params$selCoords)
     out.raster <- pre.params$out.raster
     out.raster[ind.cell] <- NA
-    m2[, as.character(ind.cell)] <- NULL
+    m2[, as.character(ind.cell)] <- NULL #Remove rejected cell
     m3 <- m2[, 2:ncol(m2)]
     imdv.mat <- matrix(rep(pre.params$params$nnDistance, ncol(m3)), ncol = ncol(m3))
-    ind.mat <- m3 > pre.params$params$nnDistanceUpdated
+    ind.mat <- m3 > pre.params$params$nnDistance
     m3 <- (ind.mat)*imdv.mat + m3*(!ind.mat)
     ed.comp <- apply(m3, 2, sum)
     iniTotalED <- pre.params$initED
@@ -125,7 +127,7 @@ FindNext <- function(pre.params, action, custom.coords=NULL){
 
   if(action=="modify"){
     ind.cell <- cellFromXY(pre.params$out.raster, custom.coords)
-    pre.params$params$nnDistanceUpdated <- apply(cbind(pre.params$params$nnDistance, m2[, as.character(ind.cell)]), 1, min)
+    pre.params$params$nnDistanceUpdated <- m2[, as.character(ind.cell)]
     m3 <- m2[, 2:ncol(m2)]
     imdv.mat <- matrix(rep(pre.params$params$nnDistanceUpdated, ncol(m3)), ncol = ncol(m3))
     ind.mat <- m3 > pre.params$params$nnDistanceUpdated
@@ -142,7 +144,7 @@ FindNext <- function(pre.params, action, custom.coords=NULL){
 
   #Create ED complementarity raster
   out.raster[as.numeric(names(ed.comp.dif))] <- ed.comp.dif
-  selCoords <- raster::xyFromCell(out.raster, raster::which.max(out.raster)) #Coordinates of site that is most complementary
+  selCoords <- raster::xyFromCell(out.raster, as.numeric(names(ed.comp)[which.min(ed.comp)])) #Coordinates of site that is most complementary
 
   print(difftime(Sys.time(), start.time, units = "mins"))
   return(list(out.raster = out.raster, initED = iniTotalED, outED = outTotalED, selCoords=selCoords, params = list(nnDistance = nnDistance, nnDistanceUpdated = nnDistanceUpdated, m2 = m2)))
