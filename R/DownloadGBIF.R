@@ -44,9 +44,9 @@
 DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
   if(!is.null(country)){
     if(country %in% ISOcodes::ISO_3166_1$Alpha_2){
-      data.request <- rgbif::occ_download(paste0('taxonKey = ', key),
-                                          'hasCoordinate = TRUE',
-                                          paste0('country = ', country),
+      data.request <- rgbif::occ_download(pred_in("taxonKey", key),
+                                          pred_in("country",country),
+                                          pred_in("hasCoordinate",TRUE),
                                           user=user,
                                           pwd=pwd,
                                           email=user.email,
@@ -61,13 +61,13 @@ DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
       return()
     } else {
       aoi.wkt <- rgbif::gbif_bbox2wkt(bbox = sp::bbox(custom.shp))
-      data.request <- rgbif::occ_download(paste0('taxonKey = ', key),
-                                          'hasCoordinate = TRUE',
+      data.request <- rgbif::occ_download(pred_in("taxonKey", key),
+                                          pred_in("hasCoordinate",TRUE),
+                                          pred_within(aoi.wkt),
                                           user=user,
                                           pwd=pwd,
                                           email=user.email,
-                                          format="SIMPLE_CSV",
-                                          paste0("geometry within ", aoi.wkt))
+                                          format="SIMPLE_CSV")
     }
   }
 
