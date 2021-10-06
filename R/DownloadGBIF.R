@@ -44,9 +44,9 @@
 DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
   if(!is.null(country)){
     if(country %in% ISOcodes::ISO_3166_1$Alpha_2){
-      data.request <- rgbif::occ_download(pred_in("taxonKey", key),
-                                          pred_in("country",country),
-                                          pred_in("hasCoordinate",TRUE),
+      data.request <- rgbif::occ_download(rgbif::pred_in("taxonKey", key),
+                                          rgbif::pred_in("country",country),
+                                          rgbif::pred_in("hasCoordinate",TRUE),
                                           user=user,
                                           pwd=pwd,
                                           email=user.email,
@@ -61,9 +61,9 @@ DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
       return()
     } else {
       aoi.wkt <- rgbif::gbif_bbox2wkt(bbox = sp::bbox(custom.shp))
-      data.request <- rgbif::occ_download(pred_in("taxonKey", key),
-                                          pred_in("hasCoordinate",TRUE),
-                                          pred_within(aoi.wkt),
+      data.request <- rgbif::occ_download(rgbif::pred_in("taxonKey", key),
+                                          rgbif::pred_in("hasCoordinate",TRUE),
+                                          rgbif::pred_within(aoi.wkt),
                                           user=user,
                                           pwd=pwd,
                                           email=user.email,
@@ -85,3 +85,4 @@ DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
   occ.table <- GetGBIFData(data.request)
   return(list(occ.table=occ.table, citation=citation))
 }
+
