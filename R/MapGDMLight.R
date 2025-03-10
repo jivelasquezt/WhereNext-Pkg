@@ -13,31 +13,30 @@
 
 MapGDMLight<-function(rast.trans){
   #Maps general dissimilarity
-
+  
   #Args:
   #   rastTrans: a rasterStack with GDM transformed environmental variables
   #Returns:
   #   pcaRast.all: a rasterStack with the pca transformed rastTrans
   #   pcaRast: a rasterStack of the first three pca transformed rastTrans, scaled from 0 to 255
   #            to plot as RGB.
-
+  
   require(gdm)
-  require(raster)
+  require(terra)
   #Plot dissimilarity
-  cellsWData <- raster::Which(!is.na(rast.trans[[1]]),cells=T)
+  cellsWData <- which(!is.na(terra::values(rast.trans[[1]])))
   rastDat <- rast.trans[cellsWData]
   pcaSamp <- prcomp(rastDat)
-  pcaRast.all <- raster::predict(rast.trans, pcaSamp, index=1:nlayers(rast.trans))
+  pcaRast.all <- terra::predict(rast.trans, pcaSamp, index = 1:nlyr(rast.trans))
   pcaRast <- pcaRast.all[[1:3]]
-
+  
   # scale rasters
-  pcaRast[[1]] <- (pcaRast[[1]]-cellStats(pcaRast[[1]],min)) /
-    (cellStats(pcaRast[[1]],max)-cellStats(pcaRast[[1]],min))*255
-  pcaRast[[2]] <- (pcaRast[[2]]-cellStats(pcaRast[[2]],min)) /
-    (cellStats(pcaRast[[2]],max)-cellStats(pcaRast[[2]],min))*255
-  pcaRast[[3]] <- (pcaRast[[3]]-cellStats(pcaRast[[3]],min)) /
-    (cellStats(pcaRast[[3]],max)-cellStats(pcaRast[[3]],min))*255
-
+  pcaRast[[1]] <- (pcaRast[[1]] - min(terra::values(pcaRast[[1]], na.rm = TRUE))) /
+    (max(terra::values(pcaRast[[1]], na.rm = TRUE)) - min(terra::values(pcaRast[[1]], na.rm = TRUE))) * 255
+  pcaRast[[2]] <- (pcaRast[[2]] - min(terra::values(pcaRast[[2]], na.rm = TRUE))) /
+    (max(terra::values(pcaRast[[2]], na.rm = TRUE)) - min(terra::values(pcaRast[[2]], na.rm = TRUE))) * 255
+  pcaRast[[3]] <- (pcaRast[[3]] - min(terra::values(pcaRast[[3]], na.rm = TRUE))) /
+    (max(terra::values(pcaRast[[3]], na.rm = TRUE)) - min(terra::values(pcaRast[[3]], na.rm = TRUE))) * 255
+  
   return(list(pcaRast=pcaRast,pcaRast.all=pcaRast.all))
 }
-

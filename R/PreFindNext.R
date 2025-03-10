@@ -89,21 +89,44 @@
 #' @export
 #' @import raster
 
+library(sf)
 
 PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.type="1", candidate.sites){
   start.time <- Sys.time()
   #Create template and output raster
-  t.raster <- !is.na(prod(env.vars)) #Cells that ARE NOT NA in any single layer become 1. NA cells become 0
+  #t.raster <- !is.na(prod(env.vars)) #Cells that ARE NOT NA in any single layer become 1. NA cells become 0
+  
+  t.raster <- app(env.vars, function(x) {
+    if (any(!is.na(x))) {
+      return(1)
+    } else {
+      return(0)
+    }
+  })
+  
   out.raster <- t.raster
   out.raster[out.raster==0] <- NA
 
   #Prepare table for gdm prediction in unsampled sites
-  ind.na <- raster::extract(t.raster, occ.table[, c("decimalLongitude", "decimalLatitude")]) #identify whether any of the sampled cells have NA data
-  occ.table <- occ.table[ind.na==1, ] #Extract only rows that are not NA in any environmental layer
-  sampled <- unique(cellFromXY(t.raster, occ.table[, c("decimalLongitude", "decimalLatitude")]))
-  usmpled <- Which(t.raster==1, cells=T)
+  
+  occ.table <- st_as_sf(occ.table, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)  # Assuming WGS84 (EPSG:4326)
+  occ.table <- st_transform(occ.table, crs = crs(env.vars))
+  coords <- st_coordinates(occ.table)
+  occ.table$decimalLongitude <- coords[, 1]
+  occ.table$decimalLatitude <- coords[, 2]
+  
+  #ind.na <- terra::extract(t.raster, occ.table[, c("decimalLongitude", "decimalLatitude")]) #identify whether any of the sampled cells have NA data
+  occ.table2 <- occ.table
+  occ.table2$ind.na <- terra::extract(t.raster, occ.table[, c("decimalLongitude", "decimalLatitude")])[2]
+  #occ.table <- occ.table[which(ind.na==1), ] #Extract only rows that are not NA in any environmental layer
+  occ.table <- occ.table2[which(occ.table2$ind.na ==1),]
+  
+  coords <- st_coordinates(occ.table)
+  sampled <- unique(cellFromXY(t.raster, coords))
+  usmpled <- which(values(t.raster) == 1)
   usmpled.ind <- which(!usmpled%in%sampled)
   usmpled <- usmpled[usmpled.ind] # Remove sampled cells from the unsampled cells set
+  
 
   if(search.type=="2"){
     if(!is.null(candidate.sites)){
@@ -118,6 +141,7 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
     }
   }
   subset.size <- subset.size * ncell(out.raster)/length(usmpled) #multiply subset size for a factor to account for NA cells in raster
+  out.raster <- raster(out.raster)
   sample.grid <- sampleRegular(out.raster, size=min(ncell(out.raster), subset.size), cells = T)
   sample.grid.nna <- apply(sample.grid, 1, function(x) !anyNA(x))
   demand.pts <- sample.grid[sample.grid.nna, "cell"]
@@ -136,7 +160,7 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
   site.grid <- expand.grid(demand.pts, sampled)
   gdm.pred <- DistGDM(site.grid, gdm.rast, env.vars)
 
-  m1 <- data.frame(c.unsampl = site.grid[, 1], c.sampled = site.grid[, 2],  dis=gdm.pred)
+  m1 <- data.frame(c.unsampl = site.grid[, 1], c.sampled = site.grid[, 2],  dis=gdm.pred[[1]])
   m1 <- tidyr::spread(m1, "c.sampled", "dis")
 
   rm(gdm.pred, site.grid)
@@ -151,7 +175,7 @@ PreFindNext<-function(gdm.rast, occ.table, env.vars, subset.size=1000, search.ty
     #Calculate distance from demand points (rows) to all unsampled sites
       site.grid2 <- expand.grid(demand.pts, usmpled)
       gdm.pred2 <- DistGDM(site.grid2, gdm.rast, env.vars)
-      m2 <- data.frame(c.unsampl = site.grid2[, 1], c.sampled = site.grid2[, 2],  dis=gdm.pred2)
+      m2 <- data.frame(c.unsampl = site.grid2[, 1], c.sampled = site.grid2[, 2],  dis=gdm.pred2[[1]])
       m2 <- tidyr::spread(m2, "c.sampled", "dis")
 
 

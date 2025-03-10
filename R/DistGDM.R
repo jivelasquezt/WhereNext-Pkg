@@ -9,20 +9,26 @@
 #' @export
 #' @import raster
 #'
-DistGDM <- function(site.grid, gdm.rast, env.vars, dist="mhtn"){
+library(terra)
+
+DistGDM <- function(site.grid, gdm.rast, env.vars, dist="mhtn") {
   colnames(site.grid) <- c("Var1", "Var2")
-  if(dist=="bio"){
+  
+  # Initialize result vector
+  if (dist == "bio") {
     res <- rep(gdm.rast$intercept, nrow(site.grid))
-    for (i in 1:nlayers(env.vars)){
-      res <- res+abs(env.vars[[i]][site.grid$Var1] - env.vars[[i]][site.grid$Var2])
+    for (i in 1:nlyr(env.vars)) {
+      res <- res + abs(terra::extract(env.vars[[i]], site.grid$Var1) - terra::extract(env.vars[[i]], site.grid$Var2))
     }
-    res <- 1 - 1/(exp(res))
+    res <- 1 - 1 / (exp(res))
   }
-  if(dist=="mhtn"){
+  
+  if (dist == "mhtn") {
     res <- rep(0, nrow(site.grid))
-    for (i in 1:nlayers(env.vars)){
-      res <- res+abs(env.vars[[i]][site.grid$Var1] - env.vars[[i]][site.grid$Var2])
+    for (i in 1:nlyr(env.vars)) {
+      res <- res + abs(terra::extract(env.vars[[i]], site.grid$Var1) - terra::extract(env.vars[[i]], site.grid$Var2))
     }
   }
+  
   return(res)
 }

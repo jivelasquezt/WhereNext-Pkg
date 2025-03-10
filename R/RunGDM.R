@@ -76,32 +76,32 @@ RunGDM <- function(occ.table, env.vars, index, use.geo, do.VarSel, field.names){
   occ.table <- subset(occ.table, select=field.names[1:3])
   occ.table$cell <- raster::cellFromXY(env.vars, occ.table[,2:3])
   occ.table <- unique(na.omit(occ.table))
-
+  
   if(index=="betasim"){
     #Create dissimilarity matrix using Beta-Sim distance measure (Kreft & Jetz 2010)
     sp.matrix <- reshape2::dcast(occ.table, as.formula(paste("cell ~",field.names[1])),
-                       fun.aggregate = function(x){as.numeric(length(x)>0)})
+                                 fun.aggregate = function(x){as.numeric(length(x)>0)})
     betasim.dist <- vegan::designdist(sp.matrix[, 2:ncol(sp.matrix)], method = "1-(a/(pmin(b,c)+a))", abcd = TRUE)
     betasim.dist <- data.frame(site = sp.matrix[, 1], as.matrix(betasim.dist))
     predData <- data.frame(site=betasim.dist$site, xFromCell(env.vars, betasim.dist$site),
                            yFromCell(env.vars, betasim.dist$site), env.vars[betasim.dist$site])
     colnames(predData)[2:3] <- field.names[2:3]
     gdm.table <- gdm::formatsitepair(betasim.dist, bioFormat=3, XColumn = field.names[2], YColumn = field.names[3],
-                                sppColumn = field.names[1], siteColumn = "site",
-                                predData = predData)
+                                     sppColumn = field.names[1], siteColumn = "site",
+                                     predData = predData)
   } else {
     gdm.table <- gdm::formatsitepair(occ.table, bioFormat=2, XColumn = field.names[2], YColumn = field.names[3],
-                                sppColumn = field.names[1], siteColumn = "cell",
-                                predData=env.vars, dist=index)
-
+                                     sppColumn = field.names[1], siteColumn = "cell",
+                                     predData=env.vars, dist=index)
+    
   }
   gdm.table <- na.omit(gdm.table)
   gdm.rast <- gdm::gdm(gdm.table, geo=use.geo)
-
+  
   if(do.VarSel){
     coef.df <- data.frame(name=rep(gdm.rast$predictors, each=3), coef=gdm.rast$coefficients)
     coef.df <- reshape2::dcast(coef.df, "name ~ .",value.var="coef", fun=sum)
-
+    
     #Force geographic to remain even if not significant
     if(use.geo){
       coef.df <-coef.df[coef.df$name!="Geographic", ]
@@ -113,7 +113,7 @@ RunGDM <- function(occ.table, env.vars, index, use.geo, do.VarSel, field.names){
     ind.cols <- colnames(gdm.table)%in%test.names
     gdm.table <- gdm.table[, ind.cols]
     m1 <- gdm::gdm(gdm.table, geo=use.geo)
-
+    
     #Remove iteratively variables. CSIRO method
     dev.dif <- 0
     while(dev.dif < 0.05){
@@ -122,19 +122,19 @@ RunGDM <- function(occ.table, env.vars, index, use.geo, do.VarSel, field.names){
       if(use.geo){
         coef.df <-coef.df[coef.df$name!="Geographic", ]
       }
-
+      
       test.var <- which.min(coef.df$.)
-
+      
       rem.vars <- paste0(c("s1.","s2."), coef.df$name[test.var])
       gdm.table.test <- gdm.table[, !(colnames(gdm.table)%in%rem.vars)]
-
+      
       m2 <- gdm::gdm(gdm.table.test, geo=use.geo)
-
+      
       if(is.null(m2$explained)|m2$explained==0){
         print("Model update has zero or null deviance. Undoing model update and exiting variable selection module")
         break()
       }
-
+      
       dev.dif <- m1$explained - m2$explained
       if(dev.dif < 0.05){
         print(paste("Variable", coef.df$name[test.var],"not significant. Removing."))
@@ -146,7 +146,7 @@ RunGDM <- function(occ.table, env.vars, index, use.geo, do.VarSel, field.names){
     }
     gdm.rast <- m1
   }
-
+  
   env.vars.red <- env.vars[[which(names(env.vars)%in%gdm.rast$predictors)]]
   rastTrans <- gdm::gdm.transform(gdm.rast, env.vars.red)
   map.gbd.results <- MapGDMLight(rastTrans)

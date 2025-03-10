@@ -8,5 +8,16 @@
 #' @export
 
 Normalize <- function(in.raster){
-  out.raster <- (in.raster - cellStats(in.raster,stat="mean"))/cellStats(in.raster, stat="sd")
+  # Calculate mean and standard deviation using terra functions
+  mean_val <- global(in.raster, fun = "mean", na.rm = TRUE)
+  sd_val <- global(in.raster, fun = "sd", na.rm = TRUE)
+  
+  # Convert mean and sd values to the same format as the raster (single value)
+  mean_val <- mean_val$mean
+  sd_val <- sd_val$sd
+  
+  # Apply normalization to the raster
+  out.raster <- (in.raster - mean_val) / sd_val
+  return(out.raster)
 }
+

@@ -81,7 +81,7 @@ DownloadGBIF <- function(key, user, user.email, pwd, country, custom.shp){
     print(paste("Download status is:", current.status))
   }
   data.grab <- rgbif::occ_download_get(data.request, overwrite = T)
-  citation <- renderPrint({rgbif::gbif_citation(data.grab)$download})
+  citation <- shiny::renderPrint({rgbif::gbif_citation(data.grab)$download})
   occ.table <- GetGBIFData(data.request)
   return(list(occ.table=occ.table, citation=citation))
 }

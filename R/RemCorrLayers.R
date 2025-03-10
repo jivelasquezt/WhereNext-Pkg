@@ -12,26 +12,39 @@
 #' @export
 
 
-RemCorrLayers <- function(in.stack, t.cor){
-  if(ncell(in.stack[[1]])<10000){
-    ssize <- ncell(in.stack[[1]])
-  } else {
-    ssize <- 10000
+RemCorrLayers <- function(in.stack, t.cor) {
+  # Convert RasterBrick or RasterStack to SpatRaster if needed
+  if (inherits(in.stack, "RasterBrick") || inherits(in.stack, "RasterStack")) {
+    in.stack <- terra::rast(in.stack)
   }
-  sample.vals<-sampleRandom(in.stack, ssize)
-  cor.matrix<-cor(sample.vals)
-  i=1
-  while (i <= ncol(cor.matrix)){
-    rem.ind <- which(abs(cor.matrix[,i])>t.cor & abs(cor.matrix[,i])<1)
-    if(length(rem.ind)==0){
-      i <- i+1
+  
+  # Define sample size based on number of cells
+  ssize <- if (ncell(in.stack[[1]]) < 10000) {
+    ncell(in.stack[[1]])
+  } else {
+    10000
+  }
+  
+  # Sample values with spatSample
+  sample.vals <- terra::spatSample(in.stack, size = ssize, method = "random", na.rm = TRUE)
+  
+  # Calculate correlation matrix
+  cor.matrix <- cor(sample.vals, use = "pairwise.complete.obs")
+  
+  i <- 1
+  while (i <= ncol(cor.matrix)) {
+    rem.ind <- which(abs(cor.matrix[, i]) > t.cor & abs(cor.matrix[, i]) < 1)
+    if (length(rem.ind) == 0) {
+      i <- i + 1
       next
     } else {
-      print(paste("removing ",colnames(cor.matrix)[rem.ind]))
-      cor.matrix<-cor.matrix[-rem.ind, -rem.ind]
-      i <- i+1
+      print(paste("removing ", colnames(cor.matrix)[rem.ind]))
+      cor.matrix <- cor.matrix[-rem.ind, -rem.ind]
+      i <- i + 1
     }
   }
-  out.stack<-in.stack[[which(names(in.stack)%in%colnames(cor.matrix))]]
+  
+  # Select layers based on remaining columns in correlation matrix
+  out.stack <- in.stack[[which(names(in.stack) %in% colnames(cor.matrix))]]
   return(out.stack)
 }
